@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.site.dao.ContentDao">
+
+    <sql id="siteContentColumns">
+    c.id,
+	c.nav_id AS "nav.id",
+	n.name AS "nav.name",
+	n.include_content_columns AS "nav.includeContentColumns",
+	n.dict_type AS "nav.dictType",
+	n.value AS "nav.value",
+	c.h1,
+	c.h2,
+	c.h3,
+	c.intro,
+	c.content,
+	c.image,
+	c.file,
+	c.href,
+	c.dict_id AS "dict.id",
+	d.value AS "dict.value",
+	d.label AS "dict.label",
+	d.type AS "dict.type",
+	c.create_by AS "createBy.id",
+	u.name AS "createBy.name",
+	c.create_date AS "createDate",
+	c.update_by AS "updateBy.id",
+	c.update_date AS "updateDate",
+	c.remarks AS "remarks",
+	c.del_flag AS "delFlag"
+    </sql>
+
+    <sql id="siteContentJoins">
+	JOIN site_nav n ON  c.nav_id = n.id
+	JOIN sys_user u ON  c.create_by = u.id
+	LEFT JOIN sys_dict d ON  c.dict_id = d.id
+    </sql>
+
+    <select id="get" resultType="Content">
+        SELECT
+        <include refid="siteContentColumns"/>
+        FROM
+        site_content c
+        <include refid="siteContentJoins"/>
+        WHERE
+        c.id = #{id}
+    </select>
+
+
+	<select id="findList" resultType="Content">
+		SELECT
+		<include refid="siteContentColumns"/>
+		FROM site_content c
+		<include refid="siteContentJoins"/>
+		<where>
+			c.del_flag = #{delFlag}
+			<if test="nav.id != null and nav.id != ''">
+				AND (c.nav_id = #{nav.id}
+				<if test="nav.parentIds != null and nav.parentIds != ''">
+					or n.parent_ids like
+					<if test="dbName == 'oracle'">'%'||#{nav.id}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{nav.id}, ',%')</if>
+				</if>)
+			</if>
+			<!--<if test="nav.name != null and nav.name != ''">-->
+				<!--AND n.name LIKE-->
+				<!--<if test="dbName == 'oracle'">'%'||#{nav.name}||'%'</if>-->
+				<!--<if test="dbName == 'mysql'">CONCAT('%', #{nav.name}, '%')</if>-->
+			<!--</if>-->
+			<if test="h1 != null and h1 != ''">
+				AND c.h1 LIKE
+				<if test="dbName == 'oracle'">'%'||#{h1}||'%'</if>
+				<if test="dbName == 'mysql'">CONCAT('%', #{h1}, '%')</if>
+			</if>
+			<!--<if test="image != null and image != ''">-->
+				<!--AND a.image  = #{image}-->
+			<!--</if>-->
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by  = #{createBy.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY c.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="Content">
+		SELECT
+		<include refid="siteContentColumns"/>
+		FROM site_content c
+		<include refid="siteContentJoins"/>
+		<where>
+			c.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY  c.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<insert id="insert">
+	INSERT into site_content(
+    id,
+	nav_id,
+	h1,
+	h2,
+	h3,
+	intro,
+	content,
+	image,
+	file,
+	href,
+	dict_id,
+	create_by,
+	create_date,
+	update_by,
+	update_date,
+	remarks,
+	del_flag
+		)
+	VALUES (
+    #{id},
+	#{nav.id},
+	#{h1},
+	#{h2},
+	#{h3},
+	#{intro},
+	#{content},
+	#{image},
+	#{file},
+	#{href},
+	#{dict.id},
+	#{createBy.id},
+	#{createDate},
+	#{updateBy.id},
+	#{updateDate},
+	#{remarks},
+	#{delFlag}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE site_content
+		SET
+	nav_id = #{nav.id},
+	h1 = #{h1},
+	h2 = #{h2},
+	h3 = #{h3},
+	intro = #{intro},
+	content = #{content},
+	image = #{image},
+	file = #{file},
+	href = #{href},
+	dict_id =#{dict.id},
+	create_by = #{createBy.id},
+	create_date = #{createDate},
+	update_by = #{updateBy.id},
+	update_date = #{updateDate},
+	remarks = #{remarks},
+	del_flag = #{delFlag}
+	WHERE
+	id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE site_content SET
+		del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateDelFlag">
+		update site_content set
+		del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+</mapper>

@@ -1,0 +1,28 @@
+/*网页管理用的css*/
+.editable:hover{
+    border-color: #9a9fa4;
+    box-shadow: 0 0 6px 0 rgba(0,0,0,0.85);
+    /*margin:10px;*/
+}
+
+
+.edit-button:first-of-type {
+    background-position: 177px 0;
+    left: 0;
+    right: auto;
+}
+
+.edit-button {
+    -moz-appearance: none;
+    background-color: transparent;
+    background-image: url("../images/controls-431.png");
+    background-position: 147px 0;
+    border: 0 none;
+    cursor: pointer;
+    display: none;
+    height: 24px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 24px;
+}

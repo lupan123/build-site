@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.site.dao.NavDao">
+
+    <sql id="columns">
+        t.id,
+        t.name AS "name",
+        t.value AS "value",
+        t.parent_id AS "parent.id",
+        n.name AS  "parent.name",
+        n.value AS "parent.value",
+        t.parent_ids AS "parentIds",
+        t.include_content_columns AS "includeContentColumns",
+        t.dict_type AS "dictType",
+        t.is_audit AS "isAudit",
+        t.sort AS "sort",
+        t.create_by AS "createBy.id",
+        t.create_date AS "createDate",
+        t.update_by AS "updateBy.id",
+        t.update_date AS "updateDate",
+        t.remarks AS "remarks",
+        t.del_flag AS "delFlag"
+    </sql>
+
+    <sql id="joins">
+        LEFT JOIN site_nav n ON  t.parent_id = n.id
+    </sql>
+
+    <select id="get" resultType="Nav">
+        SELECT
+        <include refid="columns"/>
+        FROM site_nav t
+        <include refid="joins"/>
+        WHERE t.id = #{id}
+    </select>
+
+    <select id="getByValue"  resultType="Nav">
+        SELECT
+        <include refid="columns"/>
+        FROM site_nav t
+        <include refid="joins"/>
+        <where>
+            <if test="id !=null and id !=''" >
+                t.id = #{id}
+            </if>
+            <if test="value != null and value !=''">
+                t.value = #{value}
+            </if>
+        </where>
+    </select>
+
+    <select id="findList" resultType="Nav">
+        SELECT
+        <include refid="columns"/>
+        FROM site_nav t
+        <include refid="joins"/>
+        <where>
+            t.del_flag = #{DEL_FLAG_NORMAL}
+        </where>
+        order by t.sort
+    </select>
+
+    <insert id="insert">
+        INSERT INTO site_nav(
+        id,
+        name,
+        value,
+        parent_id,
+        parent_ids,
+        include_content_columns,
+        dict_type,
+        is_audit,
+        sort,
+        create_by,
+        create_date,
+        update_by,
+        update_date,
+        remarks,
+        del_flag
+        )VALUES (
+        #{id},
+        #{name},
+        #{value},
+        #{parent.id},
+        #{parentIds},
+        #{includeContentColumns},
+        #{dictType},
+        #{isAudit},
+        #{sort},
+        #{createBy.id},
+        #{createDate},
+        #{updateBy.id},
+        #{updateDate},
+        #{remarks},
+        #{delFlag}
+        )
+    </insert>
+
+    <update id="update">
+        update site_nav SET
+        id = #{id},
+        name = #{name},
+        value = #{value},
+        parent_id = #{parent.id},
+        parent_ids = #{parentIds},
+        include_content_columns = #{includeContentColumns},
+        dict_type = #{dictType},
+        is_audit = #{isAudit},
+        sort = #{sort},
+        create_by = #{createBy.id},
+        create_date = #{createDate},
+        update_by = #{updateBy.id},
+        update_date = #{updateDate},
+        remarks = #{remarks},
+        del_flag = #{delFlag}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE site_nav SET
+        del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+
+
+    <select id="findByParentIdsLike" resultType="Nav">
+        SELECT
+        <include refid="columns"/>
+        FROM site_nav t
+        <include refid="joins"/>
+        <where>
+            t.del_flag = #{DEL_FLAG_NORMAL}
+            AND t.parent_id LIKE
+            <if test="dbName == 'oracle'">'%'||#{id}||'%'</if>
+            <if test="dbName == 'mysql'">CONCAT('%', #{id}, '%')</if>
+        </where>
+        order by t.sort
+    </select>
+
+    <update id="updateParentIds">
+        UPDATE site_nav SET
+        parent_id = #{parent.id},
+        parent_ids = #{parentIds}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findByParentId" resultType="Nav">
+        SELECT
+        <include refid="columns"/>
+        FROM site_nav t
+        <include refid="joins"/>
+        WHERE t.del_flag = #{DEL_FLAG_NORMAL}
+        AND t.parent_id = #{parent.id}
+    </select>
+</mapper>
